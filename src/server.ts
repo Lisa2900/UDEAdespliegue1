@@ -28,9 +28,9 @@ app.use(express.urlencoded({ extended: true })); // habilita el body parser para
 app.use(morgan('dev'))  // <--- Esto imprimirá info de cada request en la terminal
 
 // Servir imágenes desde /uploads/portadas
-app.use('/portadas', express.static(path.join(dominio, '../uploads/portadas')));
+app.use('/portadas', express.static(path.join(dominio, '')));
 
-app.use('/libros', express.static(path.join(dominio, '../uploads/libros')));
+app.use('/libros', express.static(path.join(dominio, '')));
 
 
 // Rutas
