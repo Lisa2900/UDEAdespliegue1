@@ -62,7 +62,7 @@ class Alumno extends Model {
   area?: Area;
 
   @Column({
-    type: DataType.STRING(10),
+    type: DataType.STRING(255),
     allowNull: true,
   })
   declare codigoVerificacion?: string;
