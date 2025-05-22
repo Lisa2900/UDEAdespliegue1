@@ -18,6 +18,7 @@ import { corsConfig } from './config/cors';
 dotenv.config();
 
 const app = express();
+const dominio = process.env.DOMAIN || 'http://localhost:3000';
 
 // Middlewares
 app.use(cors(corsConfig));
@@ -27,9 +28,9 @@ app.use(express.urlencoded({ extended: true })); // habilita el body parser para
 app.use(morgan('dev'))  // <--- Esto imprimirá info de cada request en la terminal
 
 // Servir imágenes desde /uploads/portadas
-app.use('/portadas', express.static(path.join(__dirname, '../uploads/portadas')));
+app.use('/portadas', express.static(path.join(dominio, '../uploads/portadas')));
 
-app.use('/libros', express.static(path.join(__dirname, '../uploads/libros')));
+app.use('/libros', express.static(path.join(dominio, '../uploads/libros')));
 
 
 // Rutas
