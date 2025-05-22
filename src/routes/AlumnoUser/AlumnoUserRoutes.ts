@@ -32,7 +32,7 @@ router.post('/CreateUser',
 
     body('matricula')
       .notEmpty().withMessage('La matrícula es Obligatoria')
-      .isLength({ min: 11, max:12 }).withMessage('La matrícula debe tener exactamente 11 caracteres'),
+      .isLength({ max:8 }).withMessage('La matrícula debe tener exactamente 8 caracteres'),
   
 
     body('telefono')
