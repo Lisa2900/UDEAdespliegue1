@@ -13,6 +13,7 @@ router.get('/:id',
   SemestreController.getById
 );
 
+// Obtener semestres por ID de área
 router.post('/',
   body('nombreSemestre').notEmpty().withMessage('Nombre requerido'),
   body('fkIdArea').isInt().withMessage('Área requerida y debe ser numérica'),

@@ -10,11 +10,20 @@ export class AreaController {
 
     try {
       const area = await Area.create({ nombreArea });
-
-      res.send("area creada");
+  // Se cambio porque no mandaba un json si no un string
+      // Cambia esta línea:
+      res.status(201).json({
+        message: "Área creada",
+        area: {
+          idArea: area.id,
+          nombreArea: area.nombreArea,
+          createdAt: area.createdAt,
+          updatedAt: area.updatedAt,
+        },
+      });
     } catch (error) {
       console.log(error);
-      res.send("hubo un error");
+      res.status(500).json({ message: "Hubo un error al crear el área", error });
     }
   };
 

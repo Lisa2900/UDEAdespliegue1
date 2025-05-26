@@ -14,7 +14,9 @@ export class AuthAlumnoController {
           res.status(400).json({ error: "Email no existe" });
           return;}
 
-      const passwordCorrecto = await bcrypt.compare(
+      const passwordCorrecto = await 
+bcrypt.compare
+(
         password,
         usuario.password!
       );
@@ -30,17 +32,22 @@ export class AuthAlumnoController {
       // Crear Token JWT
      
     const cookieLogin = jwt.sign(
-      { id: usuario.id, correo: usuario.correo },
+      { id: 
+usuario.id
+, correo: usuario.correo },
       process.env.JWT_SECRET!, 
       { expiresIn: "1h" }
     );
-
+const areaAcademica = usuario.areaAcademica; // Obtener el área académica asociada al usuario
       res.json({
         cookieLogin,
         usuario: {
-          id: usuario.id,
+          id: 
+usuario.id
+,
           correo: usuario.correo,
           nombre: usuario.nombre,
+          area: areaAcademica
         },
       });
     } catch (error) {
@@ -57,23 +64,24 @@ export class AuthAlumnoController {
       });
 
       if (!usuario) {
-        //sino hay usuario, cuando no existe el token
-        res.send(" token no valido ");
-        return;
-      }
+        return res.status(400).json({ message: "Token no válido o expirado" });
+    }
 
       //confirmar cuenta
 
       usuario.codigoVerificacion = null!; //eliminamos el tooken
       usuario.verificado = true;
-      await usuario.save();
+      await 
+      usuario.save
+      ();
 
-      res.send("cuenta confirmada con exito");
+      return res.status(200).json({ message: "Cuenta confirmada con éxito" });
+ 
       return;
     } catch (error) {
       console.log(error);
-      res.send("error al confirmar cuenta");
-    }
+     return res.status(200).json({ message: "Cuenta confirmada con éxito" });
+  }
   };
   static resetPassword = async (req: Request, res: Response) => {
     const { correo } = req.body;
@@ -89,7 +97,9 @@ export class AuthAlumnoController {
       }
       //generar el token y enviar el email
       usuario.codigoVerificacion = generarId();
-      await usuario.save();
+      await 
+usuario.save
+();
 
       //enviar un email
 
@@ -129,7 +139,9 @@ export class AuthAlumnoController {
       usuario.password = await bcrypt.hash(password, salt);
       usuario.verificado = null!;
       usuario.codigoVerificacion = null!;
-      await usuario.save();
+      await 
+usuario.save
+();
 
       res.send("password actualizado");
     } catch (error) {
@@ -137,4 +149,4 @@ export class AuthAlumnoController {
       res.send("error al actualizar password");
     }
   };
-}
+} 

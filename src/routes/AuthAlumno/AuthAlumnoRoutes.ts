@@ -22,9 +22,11 @@ router.post('/loginAlumno',
 
 
     //confirmar cuenta
-    router.get('/confirmar/:token',AuthAlumnoController.validateToken)
-
-
+    router.get('/confirmar/:token', (req, res, next) => {
+        AuthAlumnoController.validateToken(req, res).catch(next);
+    }); 
+    
+    
     router.post('/resetPassword',
     
         body('correo')

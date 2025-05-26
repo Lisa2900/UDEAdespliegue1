@@ -4,52 +4,62 @@ import { generarId } from "../../helpers/tokens";
 import { emailRegistro } from "../../helpers/emails";
 import bcrypt from "bcrypt";
 import Alumno from "../../data/mysql/models/Alumno";
+import Matricula from "../../data/mysql/models/Matricula";
 
 export class AlumnoController {
   static createUser = async (req: Request, res: Response) => {
-    const { matricula, nombre, correo, password, telefono, areaAcademica } =
-      req.body;
-
+    const { matricula, nombre, correo, password, telefono, areaAcademica } = req.body;
+  
     try {
-      const [existeUsuario, ExisteUserCorreo] = await Promise.all([
+      // Verificar si la matrícula ya está registrada en la tabla 'matricula'
+      const matriculaExistente = await Matricula.findOne({ where: { matricula } });
+  
+      if (!matriculaExistente) {
+        res.status(400).send("La matrícula no está registrada en el sistema");
+        return;
+      }
+  
+      // Verificar si el usuario ya existe en la tabla 'alumno'
+      const [existeUsuario, existeUserCorreo] = await Promise.all([
         Alumno.findByPk(matricula),
         Alumno.findOne({ where: { correo } }),
       ]);
-
-      if (existeUsuario || ExisteUserCorreo) {
-        res.send("el usuario ya existe");
+  
+      if (existeUsuario || existeUserCorreo) {
+        res.status(400).send("El usuario o el correo ya existen");
         return;
       }
-
+  
       // Hashear la contraseña
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
-
+  
+      // Crear el nuevo alumno
       const usuario = await Alumno.create({
-        nombre,
-        correo,
         matricula,
-        areaAcademica,
+        nombre,
         telefono,
-
+        correo,
         password: hashedPassword,
+        areaAcademica,
         codigoVerificacion: generarId(),
       });
-
-      //envia email de confimacaion
+  
+      // Enviar el email de confirmación
       emailRegistro({
         nombre: usuario.nombre!,
         correo: usuario.correo!,
         codigoVerificacion: usuario.codigoVerificacion!,
       });
-
-      res.send("Se ha enviado un email de confirmacion").status(200);
-
+  
+      // Responder al cliente
+      res.status(200).send("Se ha enviado un email de confirmación");
+  
     } catch (error) {
       console.log(error);
-      res.send("hubo un error intentalo de nuevo").status(500);
+      res.status(500).send("Hubo un error, intenta de nuevo");
     }
-  };
+  }; 
 
   static getUserByMatricula = async (req: Request, res: Response) => {
     const { matricula } = req.params;
@@ -106,11 +116,11 @@ export class AlumnoController {
   };
 
   static updateUser = async (req: Request, res: Response) => {
-    const { matricula } = req.params;
-    const { correo, nombre, password } = req.body;
+    const { correo : email } = req.params;
+    const { correo, nombre, telefono } = req.body;
 
     try {
-      const user = await Alumno.findOne({ where: { matricula } });
+      const user = await Alumno.findOne({ where: { correo: email } });
 
       if (!user) {
          res.status(404).send("Usuario no encontrado");
@@ -126,11 +136,9 @@ export class AlumnoController {
         user.nombre = nombre;  // Actualizar nombre
       }
 
-      if (password) {
-        // Hashear la nueva contraseña
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
-        user.password = hashedPassword;  // Actualizar contraseña
+      if (telefono) {
+        
+        user.telefono = telefono;  // Actualizar teléfono
       }
 
 

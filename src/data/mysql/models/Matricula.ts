@@ -1,23 +1,33 @@
-import { Table, Column, Model, DataType, PrimaryKey } from 'sequelize-typescript';
+// models/Matricula.ts
 
-@Table({
+import {
+    Table,
+    Column,
+    Model,
+    DataType,
+    PrimaryKey,
+    Unique
+  } from 'sequelize-typescript';
+  
+  @Table({
     tableName: 'matricula',
     timestamps: false,
-})
-class Matricula extends Model {
+  })
+  class Matricula extends Model {
     @PrimaryKey
     @Column({
-        type: DataType.INTEGER,
-        allowNull: false,
-        autoIncrement: true
+      type: DataType.INTEGER,
+      allowNull: false,
+      autoIncrement: true,
     })
     declare id: number;
-
+  
+    @Unique
     @Column({
-        type: DataType.STRING(50),
-        allowNull: false
+      type: DataType.STRING(8),
+      allowNull: false,
     })
     declare matricula: string;
-}
-
-export default Matricula;
+  }
+  
+  export default Matricula; 

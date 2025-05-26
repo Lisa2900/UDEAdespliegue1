@@ -1,40 +1,50 @@
-import multer from "multer";
-import fs from "fs";
+import multer, { MulterError } from "multer";
+import path from "path";
+import crypto from "crypto";
+import type { Request } from "express";
 
-// Crear carpeta si no existe
-const ensureFolderExists = (folderPath: string) => {
-  if (!fs.existsSync(folderPath)) {
-    fs.mkdirSync(folderPath, { recursive: true });
-  }
-};
+const filterPortada = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedMimes = ["image/jpeg", "image/png", "image/jpg"];
+  const extname = path.extname(file.originalname).toLowerCase();
 
-// Configurar almacenamiento según el campo
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = file.fieldname === "portada" ? "uploads/portadas/" : "uploads/libros/";
-    ensureFolderExists(uploadPath);
-    cb(null, uploadPath);
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  },
-});
-
-// Filtro de archivos
-const fileFilter = (req: any, file: Express.Multer.File, cb: any) => {
-  const allowedImages = ["image/jpeg", "image/png"];
-  const allowedBooks = ["application/pdf"];
-
-  if (file.fieldname === "portada" && allowedImages.includes(file.mimetype)) {
-    cb(null, true);
-  } else if (file.fieldname === "archivo" && allowedBooks.includes(file.mimetype)) {
+  if (allowedMimes.includes(file.mimetype) && [".jpg", ".jpeg", ".png"].includes(extname)) {
     cb(null, true);
   } else {
-    cb(new Error("Tipo de archivo no permitido"), false);
+    cb(new MulterError("LIMIT_UNEXPECTED_FILE", "Formato no válido para portada"));
   }
 };
 
-// Instancia de Multer
-const upload = multer({ storage, fileFilter });
+const filterArchivo = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedMimes = [
+    "application/pdf",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+  const allowedExts = [".pdf", ".docx"];
+  const extname = path.extname(file.originalname).toLowerCase();
+
+  if (allowedMimes.includes(file.mimetype) && allowedExts.includes(extname)) {
+    cb(null, true);
+  } else {
+    cb(new MulterError("LIMIT_UNEXPECTED_FILE", "Formato no válido para archivo"));
+  }
+};
+
+const storage = multer.memoryStorage();
+
+const upload = multer({
+  storage,
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === "portada") {
+      filterPortada(req, file, cb);
+    } else if (file.fieldname === "archivo") {
+      filterArchivo(req, file, cb);
+    } else {
+      cb(new MulterError("LIMIT_UNEXPECTED_FILE", "Campo no permitido"));
+    }
+  },
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB por archivo
+  },
+});
 
 export default upload;

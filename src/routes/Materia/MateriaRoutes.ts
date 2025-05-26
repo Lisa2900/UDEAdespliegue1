@@ -14,13 +14,21 @@ router.get('/:id',
   MateriaController.getById
 );
 
-router.post('/',
+//Se moifico este metodo post, detalle en el controlador de materia
+router.post(
+  '/',
   body('nombreMateria').notEmpty().withMessage('Nombre requerido'),
   body('fkIdArea').isInt().withMessage('Área requerida y numérica'),
   body('fkIdSemestre').isInt().withMessage('Semestre requerido y numérico'),
   handleInputErrors,
-  MateriaController.create
-);
+  async (req, res, next) => {
+    try {
+      await MateriaController.create(req, res);
+    } catch (error) {
+      next(error); // Pasa el error al middleware de manejo de errores
+    }
+    }
+  );
 
 router.put('/:id',
   param('id').isInt(),

@@ -24,21 +24,23 @@ const emailRegistro = async (datos: datosEmail)=>{//
       //enviar el email
 
       await transport.sendMail({
-          from: 'BienesRaices.com',
-          to: correo,
-          subject: 'confirma tu cuenta en Biblioteca_Udea.com', //asunto
-          text: 'confirma tu cuenta en bibliotecaUdea',   //es lo mismo 
-          html: `<p>  Hola ${nombre} comprueba tu cuenta en Bibliotoeca_UDEA</p>
-          <p>Tu cuenta esta lista solo debes confirmarla en el siguiente enlace:
-             <a href="${process.env.BACKEND_URL}:${process.env.PORT ?? 4000}/auth/confirmar/${codigoVerificacion}">confirmar cuenta</a>    
-            <!-- <a href="${process.env.BACKEND_URL}/auth/confirmar/${codigoVerificacion}">confirmar cuenta</a>     ulr hosting  -->
-        
-        
+        from: 'BienesRaices.com',
+        to: correo,
+        subject: 'Confirma tu cuenta en Biblioteca_Udea.com',
+        text: 'Confirma tu cuenta en Biblioteca_Udea',
+        html: `
+          <p>Hola ${nombre},</p>
+          <p>Gracias por registrarte en <strong>Biblioteca_UDEA</strong>. Tu cuenta está casi lista.</p>
+          <p>Para activarla, por favor confirma tu cuenta haciendo clic en el siguiente enlace:</p>
+          <p>
+            <a href="${process.env.FRONTENT_URL}/confirmar/${codigoVerificacion}">
+              Confirmar cuenta
+            </a>
           </p>
-
-          <p>Si tu no creaste esta cuenta puedes ignorar el mensaje</p>
-          `
-      })
+          <p>Si tú no creaste esta cuenta, puedes ignorar este mensaje.</p>
+        `
+      });
+      
 }
 
 

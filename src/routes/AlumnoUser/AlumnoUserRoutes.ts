@@ -32,7 +32,7 @@ router.post('/CreateUser',
 
     body('matricula')
       .notEmpty().withMessage('La matrícula es Obligatoria')
-      .isLength({ min: 10, max: 15 }).withMessage('La matrícula debe tener exactamente 8 caracteres'),
+      .isLength({ max:8 }).withMessage('La matrícula debe tener exactamente 8 caracteres'),
   
 
     body('telefono')
@@ -62,7 +62,7 @@ router.get('/',
 
 
 //updateUser
-    router.put('/:matricula',
+    router.put('/:correo',
       body('nombre')
       .notEmpty().withMessage('El nombre del Usuario es Obligatorio')
       .isLength({ max: 50 }).withMessage('El nombre no puede exceder los 50 caracteres'),
@@ -74,11 +74,10 @@ router.get('/',
       .isLength({ max: 255 }).withMessage('El email no puede exceder los 255 caracteres'),
   
  
-    body('password')
-      .notEmpty().withMessage('El password es Obligatorio')
-      .isLength({ min: 6 }).withMessage('El password debe ser mayor a 6 caracteres')
-      .isLength({ max: 255 }).withMessage('El password no puede exceder los 255 caracteres'),
-      handleInputErrors,
+      body('telefono')
+      .optional()
+      .isInt().withMessage('El teléfono debe ser un número entero')
+      .isLength({ max: 20 }).withMessage('El teléfono no puede exceder los 20 caracteres'),
 
         AlumnoController.updateUser)
 

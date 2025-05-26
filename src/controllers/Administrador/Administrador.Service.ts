@@ -58,7 +58,7 @@ export class AdminService {
         correo: admin.correo,
         rol: admin.rol,
       });
-
+console.log(token)
       if (!token) throw CustomError.internalServerError('Error al generar el token');
 
       //*Retornamos el administrador
@@ -129,31 +129,36 @@ export class AdminService {
    * @throws CustomError
    */
   public async loginAdmin(loginAdminDto: LoginAdminDTO) {
-
     const existAdmin = await Administrador.findOne({
-      where: {
-        correo: loginAdminDto.correo,
-      },
+      where: { correo: loginAdminDto.correo },
     });
-
-    if (!existAdmin) throw CustomError.badRequest('El correo no esta registrado');
-
-    const isMatch = bcryptAdapter.compare(loginAdminDto.password, existAdmin.password)
-    if (!isMatch) throw CustomError.badRequest('La contraseña es incorrecta');
-
-    const { correo, rol } = AdminEntity.fromObject(existAdmin);
-
-    const token = await JwtAdapter.generateToken({
-      correo,
-      rol
-    });
-
+  
+    if (!existAdmin) throw CustomError.badRequest('Credenciales inválidas');
+  
+    const isMatch = await bcryptAdapter.compare(
+      loginAdminDto.password,
+      existAdmin.password
+    );
+  
+    if (!isMatch) throw CustomError.badRequest('Credenciales inválidas');
+  
+    const { correo, nombre, rol } = AdminEntity.fromObject(existAdmin);
+  
+    const cookieLogin = await JwtAdapter.generateToken(
+      { correo, rol },
+      3600 // 1 hour in seconds
+    );
+  
     return {
-      admin: correo,
-      token
-    }
-
+      cookieLogin,
+      usuario: {
+        correo,
+        nombre,
+        rol
+      },
+    };
   }
+  
 
   /**
    * getAllAdmins

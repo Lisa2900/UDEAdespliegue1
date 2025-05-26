@@ -1,50 +1,64 @@
 import multer from "multer"
+import { Storage } from "@google-cloud/storage"
 import path from "path"
-import fs from "fs"
 import crypto from "crypto"
 import type { Request } from "express"
+import { MulterError } from "multer"
 
-// Configuración para almacenar la portada (imagen)
-const portadaStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadPath = path.join(process.cwd(), "portadas")
+const gcpCredentials = process.env.GOOGLE_CREDENTIALS ? JSON.parse(process.env.GOOGLE_CREDENTIALS) : undefined
 
-    if (!fs.existsSync(uploadPath)) {
-      fs.mkdirSync(uploadPath, { recursive: true })
-    }
-
-    cb(null, uploadPath)
-  },
-  filename: (req, file, cb) => {
-    // Generar nombre de archivo seguro y único
-    const randomName = crypto.randomBytes(16).toString("hex")
-    const extname = path.extname(file.originalname).toLowerCase()
-    cb(null, `${Date.now()}-${randomName}${extname}`)
-  },
+const storage = new Storage({
+  projectId: process.env.GCP_PROJECT_ID,
+  credentials: gcpCredentials,
 })
 
-// Validación de tipos de archivo
-const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  const allowedMimes = ["image/jpeg", "image/png", "image/jpg"]
-  const allowedExts = [".jpg", ".jpeg", ".png"]
-  const extname = path.extname(file.originalname).toLowerCase()
+const bucket = storage.bucket(process.env.GCP_BUCKET_NAME!)
 
-  if (allowedMimes.includes(file.mimetype) && allowedExts.includes(extname)) {
-    return cb(null, true)
-  }
-
-  cb(new Error("Formato de imagen no válido. Solo se permiten archivos JPG, JPEG o PNG"))
+const generateUniqueName = (originalname: string) => {
+  const randomName = crypto.randomBytes(16).toString("hex")
+  const ext = path.extname(originalname).toLowerCase()
+  return `${Date.now()}-${randomName}${ext}`
 }
 
-// Configuración para la carga de la portada
-const uploadPortada = multer({
-  storage: portadaStorage,
+const fileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  const allowedMimes = ["image/jpeg", "image/png", "image/jpg"]
+  const extname = path.extname(file.originalname).toLowerCase()
+
+  if (allowedMimes.includes(file.mimetype) && [".jpg", ".jpeg", ".png"].includes(extname)) {
+    cb(null, true)
+  } else {
+    cb(new MulterError("LIMIT_UNEXPECTED_FILE", "Formato no válido"))
+  }
+}
+
+const upload = multer({
+  storage: multer.memoryStorage(),
   fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
-    files: 5, // Solo un archivo
+    files: 1,
   },
 })
 
-export default uploadPortada
+export const uploadToGCS = async (file: Express.Multer.File) => {
+  return new Promise<string>((resolve, reject) => {
+    const gcsFileName = generateUniqueName(file.originalname)
+    const fileUpload = bucket.file(gcsFileName)
 
+    const blobStream = fileUpload.createWriteStream({
+      resumable: false,
+      contentType: file.mimetype,
+      public: true, // O false si es privado
+    })
+
+    blobStream.on("error", (err) => reject(err))
+    blobStream.on("finish", () => {
+      const publicUrl = `https://storage.googleapis.com/${bucket.name}/${gcsFileName}`
+      resolve(publicUrl)
+    })
+
+    blobStream.end(file.buffer)
+  })
+}
+
+export default upload

@@ -5,8 +5,19 @@ import Materia from '../../data/mysql/models/Materia';
 
 class SemestreController {
   static async getAll(req: Request, res: Response) {
-    const data = await Semestre.findAll({ include: [Area, Materia] });
-    res.json(data);
+    const { fkIdArea } = req.query;
+  
+    try {
+      const semestres = await Semestre.findAll({
+        where: fkIdArea ? { fkIdArea: Number(fkIdArea) } : {},
+        include: [Area, Materia],
+      });
+  
+      res.json(semestres);
+    } catch (error) {
+      console.error("Error al obtener semestres:", error);
+      res.status(500).json({ message: "Error al obtener semestres" });
+    }
   }
 
   static async getById(req: Request, res: Response) {

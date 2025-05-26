@@ -17,7 +17,7 @@ export class AdminRoutes {
 
     //Login y Registro de administradores
     router.post("/createAdmin",
-      AuthMiddleware.validateJWT,
+      //AuthMiddleware.validateJWT,
       body("correo")
         .isString().withMessage("El correo debe ser una cadena")
         .notEmpty().withMessage("El correo es obligatorio")
@@ -57,7 +57,7 @@ export class AdminRoutes {
       administradorController.login);
 
     router.put("/updatePasswordAdminByEmail/:email",
-      AuthMiddleware.validateJWT,
+      //AuthMiddleware.validateJWT,
       body("password")
         .isString().withMessage("El password debe ser una cadena")
         .notEmpty().withMessage("El password es obligatorio")
@@ -69,12 +69,12 @@ export class AdminRoutes {
 
     //CRUD de administradores
     router.get("/getAllAdmins",
-      AuthMiddleware.validateJWT,
+      //AuthMiddleware.validateJWT,
       administradorController.getAllAdmins
     );
 
     router.get("/getAdminByEmail/:email",
-      AuthMiddleware.validateJWT,
+      //AuthMiddleware.validateJWT,
       param("email")
         .notEmpty().withMessage("El argumento email no debe estar vacio")
         .isEmail().withMessage("El argumento email no es un correo valido")
@@ -83,7 +83,7 @@ export class AdminRoutes {
     );
 
     router.put("/updateAdminByEmail/:email",
-      AuthMiddleware.validateJWT,
+      //AuthMiddleware.validateJWT,
       administradorController.updateAdminByEmail
     );
 
