@@ -5,7 +5,6 @@ import Semestre from '../../data/mysql/models/Semestre';
 import Materia from '../../data/mysql/models/Materia';
 import { validationResult } from 'express-validator';
 import path from 'path';
-import { uploadToGCS } from '../../utils/uploadToGCS';
 
 export const createBook = async (req: Request, res: Response) => {
   try {

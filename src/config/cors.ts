@@ -1,6 +1,5 @@
 import { CorsOptions } from 'cors';
 
-
 export const corsConfig: CorsOptions = {
   origin: function (origin, callback) {
     const whitelist = [
@@ -15,4 +14,3 @@ export const corsConfig: CorsOptions = {
   },
   credentials: true,
 };
-
