@@ -28,7 +28,7 @@ export const uploadToGCS = async (file: Express.Multer.File, folder: string): Pr
     const blobStream = fileUpload.createWriteStream({
       resumable: false,
       contentType: file.mimetype,
-      public: true,
+     
     });
 
     blobStream.on("error", reject);
