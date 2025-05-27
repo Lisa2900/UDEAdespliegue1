@@ -33,7 +33,7 @@ const emailRegistro = async (datos: datosEmail)=>{//
           <p>Gracias por registrarte en <strong>Biblioteca_UDEA</strong>. Tu cuenta está casi lista.</p>
           <p>Para activarla, por favor confirma tu cuenta haciendo clic en el siguiente enlace:</p>
           <p>
-            <a href="${process.env.FRONTENT_URL}/confirmar/${codigoVerificacion}">
+            <a href="${process.env.FRONTEND_URL}/confirmar/${codigoVerificacion}">
               Confirmar cuenta
             </a>
           </p>
