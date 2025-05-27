@@ -1,28 +1,24 @@
 import { Storage } from '@google-cloud/storage';
 import path from 'path';
 
-// Inicializar Storage solo una vez
+const gcpCredentials = process.env.GOOGLE_CREDENTIALS
+  ? JSON.parse(process.env.GOOGLE_CREDENTIALS)
+  : undefined;
+
 const storage = new Storage({
   projectId: process.env.GCP_PROJECT_ID,
-  keyFilename: path.join(__dirname, '../../keystorage.json'),
+  credentials: gcpCredentials,
 });
 
 const bucket = storage.bucket(process.env.GCP_BUCKET_NAME!);
 
-/**
- * Extrae la ruta relativa dentro del bucket desde una URL pública de GCS
- * @param publicUrl URL pública del archivo en GCS
- * @returns ruta relativa del archivo dentro del bucket
- */
+// Extrae la ruta del archivo desde la URL pública
 export const getGCSFilePath = (publicUrl: string): string => {
   const url = new URL(publicUrl);
   return url.pathname.replace(`/${bucket.name}/`, '');
 };
 
-/**
- * Elimina uno o varios archivos del bucket
- * @param filePaths Array de rutas relativas dentro del bucket a eliminar
- */
+// Elimina archivos por ruta
 export const deleteFiles = async (filePaths: string[]) => {
   const failedDeletes: string[] = [];
 
@@ -47,13 +43,7 @@ export const deleteFiles = async (filePaths: string[]) => {
   }
 };
 
-/**
- * Sube un archivo a GCS y devuelve la URL pública
- * @param fileBuffer Buffer del archivo
- * @param destinationPath ruta dentro del bucket donde se almacenará el archivo
- * @param contentType tipo MIME del archivo
- * @returns URL pública del archivo subido
- */
+// Sube un archivo a GCS
 export const uploadFile = async (
   fileBuffer: Buffer,
   destinationPath: string,
@@ -65,6 +55,7 @@ export const uploadFile = async (
     const stream = file.createWriteStream({
       resumable: false,
       contentType,
+      public: true,
     });
 
     stream.on('error', reject);
@@ -75,15 +66,10 @@ export const uploadFile = async (
   return `https://storage.googleapis.com/${bucket.name}/${destinationPath}`;
 };
 
-/**
- * Genera una URL firmada para un archivo en GCS que expira en un tiempo dado
- * @param filePath ruta relativa dentro del bucket
- * @param expiresInSeconds segundos para que expire la URL firmada (por defecto 10 min)
- * @returns URL firmada para acceso temporal
- */
+// Genera una URL firmada
 export const generateSignedUrl = async (
   filePath: string,
-  expiresInSeconds = 60 * 60 * 24 
+  expiresInSeconds = 60 * 60 * 24
 ): Promise<string> => {
   const file = bucket.file(filePath);
   const [url] = await file.getSignedUrl({
